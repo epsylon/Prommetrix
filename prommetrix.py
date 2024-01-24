@@ -15,6 +15,12 @@ Due to the fact that authentication and encryption support is relatively new, ma
 
 ----------
 
+Dork (using default port):
+
+  - inurl:":9100/metrics"
+  
+----------
+
 This vulnerabily can be described in a Pentest/Report like: 
 
  - PRM-01-001 Client: Clients leak Metrics data through unprotected endpoint (LOW)
@@ -39,26 +45,35 @@ You should have received a copy of the GNU General Public License along
 with Prommetrix; if not, write to the Free Software Foundation, Inc., 51
 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-VERSION=str(0.1)
+VERSION=str(0.2)
 
 import os, sys, requests, random, re 
 
 def banner():
-    print(r'''Prommetrix (v'''+VERSION+''') by psy (https://03c8.net) | 2024
+    print(r'''====================================================================
+  ___                                     _        ___  __
+|  _ \ _ __ ___  _ __ ___  _ __ ___   ___| |_ _ __(_) \/ /
+| |_) | '__/ _ \| '_ ` _ \| '_ ` _ \ / _ \ __| '__| |\  / 
+|  __/| | | (_) | | | | | | | | | | |  __/ |_| |  | |/  \ 
+|_|   |_|  \___/|_| |_| |_|_| |_| |_|\___|\__|_|  |_/_/\_\
+                   (v'''+VERSION+''') by psy (https://03c8.net) | 2024                                                      
 
-    Source Code:
+Source Code:
     
-      - Official: https://code.03c8.net/epsylon/prommetrix
-      - Mirror: https://github.com/epsylon/prommetrix
+  - Official: https://code.03c8.net/epsylon/prommetrix
+  - Mirror: https://github.com/epsylon/prommetrix
+
+Usage:
+
+  python3 prommetrix.py --target <IP> --port <PORT> (default: 9100)
       
-    Usage: 
-      
-      python3 prommetrix.py --target <IP> --port <PORT> (default: 9100)
-    ''')
+====================================================================''')
 
 
 def init():
     if "--target" in sys.argv:
+        print("")
+        banner()
         user_agent_list = [
     	    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36',
   	    'Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1',
@@ -93,47 +108,90 @@ def init():
         node_exporter_build_branch = r_text.split('node_exporter_build_info{branch="')[1].split('"')[0]
         node_exporter_build_goversion = r_text.split('goversion="')[1].split('"')[0]
         node_exporter_build_revision = r_text.split('revision="')[1].split('"')[0]
-        node_exporter_build_version = r_text.split('version="')[1].split('"')[0]      
-        node_dmi_bios_date = r_text.split('node_dmi_info{bios_date="')[1].split('"')[0]
-        node_dmi_bios_release = r_text.split('bios_release="')[1].split('"')[0]
-        node_dmi_bios_version = r_text.split('bios_version="')[1].split('"')[0]
-        node_dmi_bios_vendor = r_text.split('bios_vendor="')[1].split('"')[0]                  
-        node_os_build = r_text.split('node_os_info{build_id="')[1].split('",id')[0]
-        node_os_id = r_text.split(',id="')[1].split('",id_like')[0]
-        node_os_id_like = r_text.split('id_like="')[1].split('",image_id')[0]
-        node_os_image_id = r_text.split('image_id="')[1].split('",image_version')[0]
-        node_os_image_version = r_text.split('image_version="')[1].split('",name')[0]
-        node_os_name = r_text.split(',name="')[1].split('",pretty_name')[0]
-        node_os_pretty_name = r_text.split('pretty_name="')[1].split('",variant')[0]
-        node_os_variant = r_text.split('variant="')[1].split('",variant_id')[0] 
-        node_os_variant_id = r_text.split('variant_id="')[1].split('",version')[0]  
-        node_os_version_codename = r_text.split('version_codename="')[1].split('",version_id')[0]
-        node_os_version_id = r_text.split('version_id="')[1].split('"}')[0]                                   
-        node_dmi_board_asset_tag = r_text.split('board_asset_tag="')[1].split('"')[0]
-        node_dmi_board_name = r_text.split('board_name="')[1].split('"')[0]
-        node_dmi_board_version = r_text.split('board_version="')[1].split('"')[0]
-        node_dmi_board_vendor = r_text.split('board_vendor="')[1].split('"')[0]
-        node_dmi_chassis_asset_tag = r_text.split('chassis_asset_tag="')[1].split('"')[0]
-        node_dmi_chassis_version = r_text.split('chassis_version="')[1].split('"')[0]
-        node_dmi_chassis_vendor = r_text.split('chassis_vendor="')[1].split('"')[0]
-        node_dmi_product_family = r_text.split('product_family="')[1].split('"')[0]
-        node_dmi_product_name = r_text.split('product_name="')[1].split('"')[0]
-        node_dmi_product_sku = r_text.split('product_sku="')[1].split('"')[0]
-        node_dmi_product_version = r_text.split('product_version="')[1].split('"')[0]
-        node_dmi_system_vendor = r_text.split('system_vendor="')[1].split('"')[0]       
+        node_exporter_build_version = r_text.split('version="')[1].split('"')[0]
+        try:      
+            node_dmi_bios_date = r_text.split('node_dmi_info{bios_date="')[1].split('"')[0]
+            node_dmi_bios_release = r_text.split('bios_release="')[1].split('"')[0]
+            node_dmi_bios_version = r_text.split('bios_version="')[1].split('"')[0]
+            node_dmi_bios_vendor = r_text.split('bios_vendor="')[1].split('"')[0]
+            system_flag = True
+            bios_flag = True
+        except:
+            node_dmi_bios_date = None
+            node_dmi_bios_release = None
+            node_dmi_bios_version = None
+            node_dmi_bios_vendor = None
+            system_flag = False
+            bios_flag = False
+        try:              
+            node_os_build = r_text.split('node_os_info{build_id="')[1].split('",id')[0]
+            node_os_id = r_text.split(',id="')[1].split('",id_like')[0]
+            node_os_id_like = r_text.split('id_like="')[1].split('",image_id')[0]
+            node_os_image_id = r_text.split('image_id="')[1].split('",image_version')[0]
+            node_os_image_version = r_text.split('image_version="')[1].split('",name')[0]
+            node_os_pretty_name = r_text.split('pretty_name="')[1].split('",variant')[0]
+            node_os_variant = r_text.split('variant="')[1].split('",variant_id')[0] 
+            node_os_variant_id = r_text.split('variant_id="')[1].split('",version')[0]  
+            node_os_version_codename = r_text.split('version_codename="')[1].split('",version_id')[0]
+            node_os_version_id = r_text.split('version_id="')[1].split('"}')[0]   
+            os_flag = True
+        except:
+            node_os_build = None
+            node_os_id = None
+            node_os_id_like = None
+            node_os_image_id = None
+            node_os_image_version = None
+            node_os_name = None
+            node_os_pretty_name = None
+            node_os_variant = None
+            node_os_variant_id = None 
+            node_os_version_codename = None
+            node_os_version_id = None
+            os_flag = False
+        try:                              
+            node_dmi_board_asset_tag = r_text.split('board_asset_tag="')[1].split('"')[0]
+            node_dmi_board_name = r_text.split('board_name="')[1].split('"')[0]
+            node_dmi_board_version = r_text.split('board_version="')[1].split('"')[0]
+            node_dmi_board_vendor = r_text.split('board_vendor="')[1].split('"')[0]
+            node_dmi_chassis_asset_tag = r_text.split('chassis_asset_tag="')[1].split('"')[0]
+            node_dmi_chassis_version = r_text.split('chassis_version="')[1].split('"')[0]
+            node_dmi_chassis_vendor = r_text.split('chassis_vendor="')[1].split('"')[0]
+            node_dmi_product_family = r_text.split('product_family="')[1].split('"')[0]
+            node_dmi_product_name = r_text.split('product_name="')[1].split('"')[0]
+            node_dmi_product_sku = r_text.split('product_sku="')[1].split('"')[0]
+            node_dmi_product_version = r_text.split('product_version="')[1].split('"')[0]
+            node_dmi_system_vendor = r_text.split('system_vendor="')[1].split('"')[0]
+            board_flag = True  
+        except:
+            node_dmi_board_asset_tag = None
+            node_dmi_board_name = None
+            node_dmi_board_version = None
+            node_dmi_board_vendor = None
+            node_dmi_chassis_asset_tag = None
+            node_dmi_chassis_version = None
+            node_dmi_chassis_vendor = None
+            node_dmi_product_family = None
+            node_dmi_product_name = None
+            node_dmi_product_sku = None
+            node_dmi_product_version = None
+            node_dmi_system_vendor = None
+            board_flag = False
         node_cpus = r_text.split('node_softnet_dropped_total{cpu="')           
         node_uname_info_domainname = r_text.split('node_uname_info{domainname="')[1].split('"')[0]
         node_uname_info_machine = r_text.split('machine="')[1].split('",nodename')[0]
         node_uname_info_nodename = r_text.split('nodename="')[1].split('",release')[0]
         node_uname_info_release = r_text.split(',release="')[1].split('",sysname')[0]     
         node_uname_info_sysname = r_text.split(',sysname="')[1].split('",version')[0]            
-        node_uname_info_version = r_text.split('version="#')[1].split('"} ')[0]   
-        node_time_zone = r_text.split('node_time_zone_offset_seconds{time_zone="')[1].split('"')[0]                   
+        node_uname_info_version = r_text.split('version="#')[1].split('"} ')[0] 
+        try:
+            node_time_zone = r_text.split('node_time_zone_offset_seconds{time_zone="')[1].split('"')[0] 
+            time_zone_flag = True
+        except:
+            node_time_zone = None
+            time_zone_flag = False
         print("\n  - 'Node Export' (build):")    
         if node_exporter_build_branch:
             print("     - Branch: "+node_exporter_build_branch)   
-        if node_exporter_build_goversion:   
-            print("     - Go Version: "+node_exporter_build_goversion) 
         if node_exporter_build_revision:        
             print("     - Revision: "+node_exporter_build_revision)   
         if node_exporter_build_version:      
@@ -143,42 +201,41 @@ def init():
             node_cpus_number = 0 
             for d in node_cpus[1:]:
                 node_cpus_number = node_cpus_number + 1             
-            print("     - "+str(node_cpus_number))  
-        print("\n  - SYSTEM:")   
-        if node_dmi_system_vendor:   
-            print("     - Vendor: "+node_dmi_system_vendor)
-        print("\n  - BIOS:")   
-        if node_dmi_bios_date:   
-            print("     - Date: "+node_dmi_bios_date)
-        if node_dmi_bios_release:   
-            print("     - Release: "+node_dmi_bios_release)
-        if node_dmi_bios_vendor:   
-            print("     - Vendor: "+node_dmi_bios_vendor)
-        if node_dmi_bios_version:   
-            print("     - Version: "+node_dmi_bios_version)
-        print("\n  - OS:") 
-        if node_os_build:   
-            print("     - Build ID: "+node_os_build)
-        if node_os_id:   
-            print("     - ID: "+node_os_id)
-        if node_os_id_like:   
-            print("     - ID Like: "+node_os_id_like)
-        if node_os_image_id:   
-            print("     - Image ID: "+node_os_image_id)
-        if node_os_image_version:   
-            print("     - Image version: "+node_os_image_version)
-        if node_os_name:   
-            print("     - Name: "+node_os_name)
-        if node_os_pretty_name:   
-            print("     - Pretty name: "+node_os_pretty_name)   
-        if node_os_variant:   
-            print("     - Variant: "+node_os_variant)
-        if node_os_variant_id:   
-            print("     - Variant ID: "+node_os_variant_id) 
-        if node_os_version_codename:   
-            print("     - Version codename: "+node_os_version_codename)
-        if node_os_version_id:   
-            print("     - Version ID: "+node_os_version_id)    
+            print("     - "+str(node_cpus_number))
+        if system_flag == True: 
+            print("\n  - SYSTEM:")   
+            if node_dmi_bios_vendor:   
+                print("     - Vendor: "+node_dmi_bios_vendor)
+        if bios_flag == True: 
+            print("\n  - BIOS:")   
+            if node_dmi_bios_date:   
+                print("     - Date: "+node_dmi_bios_date)
+            if node_dmi_bios_release:   
+                print("     - Release: "+node_dmi_bios_release)
+            if node_dmi_bios_version:   
+                print("     - Version: "+node_dmi_bios_version)
+        if os_flag == True:
+            print("\n  - OS:") 
+            if node_os_build:   
+                print("     - Build ID: "+node_os_build)
+            if node_os_id:   
+                print("     - ID: "+node_os_id)
+            if node_os_id_like:   
+                print("     - ID Like: "+node_os_id_like)
+            if node_os_image_id:   
+                print("     - Image ID: "+node_os_image_id)
+            if node_os_image_version:   
+                print("     - Image version: "+node_os_image_version)
+            if node_os_pretty_name:   
+                print("     - Name: "+node_os_pretty_name)   
+            if node_os_variant:   
+                print("     - Variant: "+node_os_variant)
+            if node_os_variant_id:   
+                print("     - Variant ID: "+node_os_variant_id) 
+            if node_os_version_codename:   
+                print("     - Version codename: "+node_os_version_codename)
+            if node_os_version_id:   
+                print("     - Version ID: "+node_os_version_id)    
         print("\n  - UNAME:")   
         if node_uname_info_domainname:   
             print("     - Domainname: "+node_uname_info_domainname)
@@ -192,51 +249,63 @@ def init():
             print("     - Sysname: "+node_uname_info_sysname)            
         if node_uname_info_version:   
             print("     - Version: "+node_uname_info_version)
-        if node_time_zone:
-            print("\n  - TIMEZONE:")      
-            print("     - Location: "+node_time_zone)     
-        node_time_clocksource_available_info_devices = r_text.split('node_time_clocksource_available_info{clocksource="')   
-        if node_time_clocksource_available_info_devices:  
-            print("\n  - CLOCKSOURCE entries:")
-            for d in node_time_clocksource_available_info_devices[1:]:
-                node_time_clocksource_available_info_device = d.split(',device')[0].replace('"',"")
-                print("     - "+node_time_clocksource_available_info_device)                                     
-        print("\n  - BOARD:")   
-        if node_dmi_board_asset_tag:   
-            print("     - Asset_tag: "+node_dmi_board_asset_tag)
-        if node_dmi_board_name:   
-            print("     - Name: "+node_dmi_board_name)
-        if node_dmi_board_vendor:   
-            print("     - Vendor: "+node_dmi_board_vendor)
-        if node_dmi_board_version:   
-            print("     - Version: "+node_dmi_board_version)
-        print("\n  - CHASSIS:")  
-        if node_dmi_chassis_asset_tag:   
-            print("     - Asset_tag: "+node_dmi_chassis_asset_tag)
-        if node_dmi_chassis_vendor:   
-            print("     - Vendor: "+node_dmi_chassis_vendor)
-        if node_dmi_chassis_version:   
-            print("     - Version: "+node_dmi_chassis_version)
-        print("\n  - PRODUCT:")   
-        if node_dmi_product_family:   
-            print("     - Family: "+node_dmi_product_family)
-        if node_dmi_product_name:  
-            print("     - Name: "+node_dmi_product_name)
-        if node_dmi_product_sku:  
-            print("     - SKU: "+node_dmi_product_sku)
-        if node_dmi_product_version:  
-            print("     - Version: "+node_dmi_product_version)                           
-        node_disk_info_devices = r_text.split('node_disk_info{device="')
-        if node_disk_info_devices:  
-            print("\n  - Info of /sys/block/<block_device>:")   
-            for d in node_disk_info_devices[1:]:
-                node_disk_info_device = d.split('"')[0]
-                print("     - "+node_disk_info_device)   
+        if time_zone_flag == True:
+            if node_time_zone:
+                print("\n  - TIMEZONE:")      
+                print("     - Location: "+node_time_zone)    
+        if board_flag == True:                               
+            print("\n  - BOARD:")   
+            if node_dmi_board_asset_tag:   
+                print("     - TAG: "+node_dmi_board_asset_tag)
+            if node_dmi_board_name:   
+                print("     - Name: "+node_dmi_board_name)
+            if node_dmi_board_vendor:   
+                print("     - Vendor: "+node_dmi_board_vendor)
+            if node_dmi_board_version:   
+                print("     - Version: "+node_dmi_board_version)
+            print("\n  - CHASSIS:")  
+            if node_dmi_chassis_asset_tag:   
+                print("     - TAG: "+node_dmi_chassis_asset_tag)
+            if node_dmi_chassis_vendor:   
+                print("     - Vendor: "+node_dmi_chassis_vendor)
+            if node_dmi_chassis_version:   
+                print("     - Version: "+node_dmi_chassis_version)
+            print("\n  - PRODUCT:")   
+            if node_dmi_product_family:   
+                print("     - Family: "+node_dmi_product_family)
+            if node_dmi_product_name:  
+                print("     - Name: "+node_dmi_product_name)
+            if node_dmi_product_sku:  
+                print("     - SKU: "+node_dmi_product_sku)
+            if node_dmi_product_version:  
+                print("     - Version: "+node_dmi_product_version)
+        try:                           
+            node_selinux = r_text.split('node_selinux_enabled') 
+            node_selinux_flag = True     
+        except:
+            node_selinux_flag = False
+        if node_selinux_flag == True:
+            print("\n  - SELINUX:")   
+            if node_selinux == 1:              
+                print("     - Status: ON")       
+            else:
+                print("     - Status: OFF") 
+        try:                           
+            node_disk_info_devices = r_text.split('node_disk_info{device="') 
+            node_disk_info_devices_flag = True     
+        except:
+            node_disk_info_devices_flag = False
+        if node_disk_info_devices_flag == True:
+            if node_disk_info_devices:
+                print("\n  - Info of /sys/block/<block_device>:")   
+                for d in node_disk_info_devices[1:]:
+                    node_disk_info_device = d.split('"')[0]
+                    print("     - "+node_disk_info_device)                                                                          
         node_disk_filesystem_devices = r_text.split('node_filesystem_files_free{device="')
         if node_disk_filesystem_devices:  
             print("\n  - Info of node_filesystem_files:")   
             for d in node_disk_filesystem_devices[1:]:
-                node_disk_filesystem_device = d.split('} ')[0].replace('"',"")
+                node_disk_filesystem_device = d.split('} ')[0]
                 print("     - "+node_disk_filesystem_device)
         node_network_iface_id_devices = r_text.split('node_network_iface_id{device="')
         if node_network_iface_id_devices:  
@@ -244,18 +313,18 @@ def init():
             for d in node_network_iface_id_devices[1:]:
                 node_network_iface_id_device = d.split('"')[0]
                 print("     - "+node_network_iface_id_device)       
-        node_network_info_devices = r_text.split('node_network_info{address="')
+        node_network_info_devices = r_text.split('node_network_info{')
         if node_network_info_devices:  
             print("\n  - NETWORK entries by device:")
             for d in node_network_info_devices[1:]:
-                node_network_info_device = d.split('} ')[0].replace('"',"")
+                node_network_info_device = d.split('} ')[0]
                 print("     - "+node_network_info_device)        
-#        node_arp_devices = r_text.split('node_arp_entries{device="')
-#        if node_arp_devices:  
-#            print("\n  - ARP entries by device:")
-#            for d in node_arp_devices[1:]:
-#                arp_device = d.split('"')[0]
-#                print("     - "+arp_device)         
+        node_arp_devices = r_text.split('node_arp_entries{device="')
+        if node_arp_devices:  
+            print("\n  - ARP entries by device:")
+            for d in node_arp_devices[1:]:
+                arp_device = d.split('"')[0]
+                print("     - "+arp_device)         
         print("\n  - PROMETHEUS HTTP_metrics:")
         promhttp_metric_handler_errors_total_encoding = r_text.split('promhttp_metric_handler_errors_total{cause="encoding"}')[1].split("\n")[0]
         promhttp_metric_handler_errors_total_gathering = r_text.split('promhttp_metric_handler_errors_total{cause="gathering"}')[1].split("\n")[0]
@@ -263,11 +332,11 @@ def init():
         promhttp_metric_handler_requests_total_200 = r_text.split('promhttp_metric_handler_requests_total{code="200"}')[1].split("\n")[0]
         promhttp_metric_handler_requests_total_500 = r_text.split('promhttp_metric_handler_requests_total{code="500"}')[1].split("\n")[0]
         promhttp_metric_handler_requests_total_503 = r_text.split('promhttp_metric_handler_requests_total{code="503"}')[1].split("\n")[0]
-        print("      - HTTP-200 (OK)   : "+promhttp_metric_handler_requests_total_200)
-        print("      - HTTP-500 (FAIL) : "+promhttp_metric_handler_requests_total_500)
-        print("      - HTTP-503 (FAIL) : "+promhttp_metric_handler_requests_total_503)
-        print("      - ENCODING (FAIL) : "+promhttp_metric_handler_errors_total_encoding)
-        print("      - GHATERING (FAIL): "+promhttp_metric_handler_errors_total_gathering)
+        print("     - HTTP-200 (OK)   : "+promhttp_metric_handler_requests_total_200)
+        print("     - HTTP-500 (FAIL) : "+promhttp_metric_handler_requests_total_500)
+        print("     - HTTP-503 (FAIL) : "+promhttp_metric_handler_requests_total_503)
+        print("     - ENCODING (FAIL) : "+promhttp_metric_handler_errors_total_encoding)
+        print("     - GHATERING (FAIL): "+promhttp_metric_handler_errors_total_gathering)
         print("")
     else:
         print("")

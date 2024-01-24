@@ -31,6 +31,12 @@ read the metric data."
 
  ----------
 
+Dork (using default port):
+
+  - inurl:":9100/metrics"
+  
+ ----------
+
  Prommetrix - will take advantage of these metrics to obtain relevant information from the Prometheus instance, as well as, of the machine in which it is running.
 
 ![c](https://03c8.net/images/prommetrix_poc.png)
