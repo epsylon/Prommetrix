@@ -326,8 +326,12 @@ def init():
                 arp_device = d.split('"')[0]
                 print("     - "+arp_device)         
         print("\n  - PROMETHEUS HTTP_metrics:")
-        promhttp_metric_handler_errors_total_encoding = r_text.split('promhttp_metric_handler_errors_total{cause="encoding"}')[1].split("\n")[0]
-        promhttp_metric_handler_errors_total_gathering = r_text.split('promhttp_metric_handler_errors_total{cause="gathering"}')[1].split("\n")[0]
+        try:
+            promhttp_metric_handler_errors_total_encoding = r_text.split('promhttp_metric_handler_errors_total{cause="encoding"}')[1].split("\n")[0]
+            promhttp_metric_handler_errors_total_gathering = r_text.split('promhttp_metric_handler_errors_total{cause="gathering"}')[1].split("\n")[0]
+            prom_gathering_flag = True
+        except:
+            prom_gathering_flag = False                 
         promhttp_metric_handler_requests_in_flight = r_text.split('promhttp_metric_handler_requests_in_flight')[1].split("\n")[0]
         promhttp_metric_handler_requests_total_200 = r_text.split('promhttp_metric_handler_requests_total{code="200"}')[1].split("\n")[0]
         promhttp_metric_handler_requests_total_500 = r_text.split('promhttp_metric_handler_requests_total{code="500"}')[1].split("\n")[0]
@@ -335,8 +339,9 @@ def init():
         print("     - HTTP-200 (OK)   : "+promhttp_metric_handler_requests_total_200)
         print("     - HTTP-500 (FAIL) : "+promhttp_metric_handler_requests_total_500)
         print("     - HTTP-503 (FAIL) : "+promhttp_metric_handler_requests_total_503)
-        print("     - ENCODING (FAIL) : "+promhttp_metric_handler_errors_total_encoding)
-        print("     - GHATERING (FAIL): "+promhttp_metric_handler_errors_total_gathering)
+        if prom_gathering_flag == True:
+            print("     - ENCODING (FAIL) : "+promhttp_metric_handler_errors_total_encoding)
+            print("     - GHATERING (FAIL): "+promhttp_metric_handler_errors_total_gathering)
         print("")
     else:
         print("")
