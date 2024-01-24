@@ -176,13 +176,21 @@ def init():
             node_dmi_product_version = None
             node_dmi_system_vendor = None
             board_flag = False
-        node_cpus = r_text.split('node_softnet_dropped_total{cpu="')           
-        node_uname_info_domainname = r_text.split('node_uname_info{domainname="')[1].split('"')[0]
-        node_uname_info_machine = r_text.split('machine="')[1].split('",nodename')[0]
-        node_uname_info_nodename = r_text.split('nodename="')[1].split('",release')[0]
-        node_uname_info_release = r_text.split(',release="')[1].split('",sysname')[0]     
-        node_uname_info_sysname = r_text.split(',sysname="')[1].split('",version')[0]            
-        node_uname_info_version = r_text.split('version="#')[1].split('"} ')[0] 
+        try:
+            node_cpus = r_text.split('node_softnet_dropped_total{cpu="') 
+            node_cpus_flag = True
+        except:
+            node_cpus_flag = False
+        try:          
+            node_uname_info_domainname = r_text.split('node_uname_info{domainname="')[1].split('"')[0]
+            node_uname_info_machine = r_text.split('machine="')[1].split('",nodename')[0]
+            node_uname_info_nodename = r_text.split('nodename="')[1].split('",release')[0]
+            node_uname_info_release = r_text.split(',release="')[1].split('",sysname')[0]     
+            node_uname_info_sysname = r_text.split(',sysname="')[1].split('",version')[0]            
+            node_uname_info_version = r_text.split('version="#')[1].split('"} ')[0] 
+            node_uname_flag = True
+        except:
+            node_uname_flag = False
         try:
             node_time_zone = r_text.split('node_time_zone_offset_seconds{time_zone="')[1].split('"')[0] 
             time_zone_flag = True
@@ -196,12 +204,13 @@ def init():
             print("     - Revision: "+node_exporter_build_revision)   
         if node_exporter_build_version:      
             print("     - Version: "+node_exporter_build_version)   
-        if node_cpus:  
-            print("\n  - CPUs (total):")  
+        if node_cpus_flag == True:  
             node_cpus_number = 0 
             for d in node_cpus[1:]:
-                node_cpus_number = node_cpus_number + 1             
-            print("     - "+str(node_cpus_number))
+                node_cpus_number = node_cpus_number + 1
+            if node_cpus_number > 0:
+                print("\n  - CPUs (total):")
+                print("     - "+str(node_cpus_number))
         if system_flag == True: 
             print("\n  - SYSTEM:")   
             if node_dmi_bios_vendor:   
@@ -235,20 +244,21 @@ def init():
             if node_os_version_codename:   
                 print("     - Version codename: "+node_os_version_codename)
             if node_os_version_id:   
-                print("     - Version ID: "+node_os_version_id)    
-        print("\n  - UNAME:")   
-        if node_uname_info_domainname:   
-            print("     - Domainname: "+node_uname_info_domainname)
-        if node_uname_info_machine:   
-            print("     - Machine: "+node_uname_info_machine)
-        if node_uname_info_nodename:   
-            print("     - Nodename: "+node_uname_info_nodename)
-        if node_uname_info_release:   
-            print("     - Release: "+node_uname_info_release)
-        if node_uname_info_sysname:   
-            print("     - Sysname: "+node_uname_info_sysname)            
-        if node_uname_info_version:   
-            print("     - Version: "+node_uname_info_version)
+                print("     - Version ID: "+node_os_version_id)
+        if node_uname_flag == True:    
+            print("\n  - UNAME:")   
+            if node_uname_info_domainname:   
+                print("     - Domainname: "+node_uname_info_domainname)
+            if node_uname_info_machine:   
+                print("     - Machine: "+node_uname_info_machine)
+            if node_uname_info_nodename:   
+                print("     - Nodename: "+node_uname_info_nodename)
+            if node_uname_info_release:   
+                print("     - Release: "+node_uname_info_release)
+            if node_uname_info_sysname:   
+                print("     - Sysname: "+node_uname_info_sysname)            
+            if node_uname_info_version:   
+                print("     - Version: "+node_uname_info_version)
         if time_zone_flag == True:
             if node_time_zone:
                 print("\n  - TIMEZONE:")      
